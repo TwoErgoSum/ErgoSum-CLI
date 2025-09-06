@@ -128,11 +128,10 @@ async function authenticateWithDesktop(): Promise<void> {
 }
 
 async function authenticateWithBrowser(openBrowser: boolean = true): Promise<void> {
-  const authUrl = 'https://ergosum.cc/auth'; // TODO: Create dedicated CLI auth page
+  const authUrl = 'https://ergosum.cc/auth/cli';
   
-  console.log(chalk.blue('🌐 Opening browser for authentication...'));
+  console.log(chalk.blue('🌐 Opening browser for CLI authentication...'));
   console.log(chalk.gray(`URL: ${authUrl}`));
-  console.log(chalk.yellow('Note: CLI-specific auth page is under development'));
   console.log();
   
   if (openBrowser) {
