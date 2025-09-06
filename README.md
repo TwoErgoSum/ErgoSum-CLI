@@ -2,269 +2,295 @@
 
 A powerful command-line interface for integrating ErgoSum memory and context with AI tools like Claude Code, Codex, Gemini CLI, and more.
 
+## ✨ What's New in v0.2.0
+
+- **🛡️ Enterprise-grade error handling** with automatic retry and recovery
+- **📊 Advanced logging system** with debug modes and file output  
+- **💾 Offline mode** with intelligent caching for working without internet
+- **🎯 Enhanced UX** with progress bars, spinners, and better feedback
+- **🔒 Input validation** and sanitization for security
+- **⚡ Performance optimizations** with smart caching strategies
+
 ## 🚀 Features
 
 - **Memory Management**: Store, search, and retrieve memories from ErgoSum
-- **AI Tool Integration**: Seamlessly inject context into Claude Code, Codex, Gemini CLI
-- **Context Generation**: Automatically provide relevant context to AI tools
-- **Authentication**: Secure OAuth integration with ErgoSum platform
-- **Multiple Formats**: Support for Markdown, JSON, YAML, and text output
-- **Interactive Mode**: Guided commands with prompts and validation
+- **AI Tool Integration**: Seamlessly inject context into Claude Code and other AI tools
+- **Offline Mode**: Work without internet using persistent local caching
+- **Smart Caching**: Reduce API calls and improve performance
+- **Progress Tracking**: Beautiful progress indicators for all operations
+- **Error Recovery**: Robust error handling with automatic retries
+- **Debug Logging**: Comprehensive logging with multiple verbosity levels
+- **Input Validation**: Secure input sanitization and schema validation
 
 ## 📦 Installation
 
-### From npm
 ```bash
 npm install -g ergosum-cli
-
-# Or use shorter alias
-npm install -g ergosum-cli
-# Then use: ergosum or egs
 ```
 
-### From source
+After installation, you can use either:
+- **`ergosum`** - Full command name  
+- **`egs`** - Short alias for quick access
+
+### Verify Installation
 ```bash
-git clone https://github.com/TwoErgoSum/ErgoSum-cli.git
-cd ErgoSum-cli
-npm install
-npm run build
-npm link
+ergosum --version  # Shows current version
+ergosum --help     # Shows all available commands
 ```
 
 ## 🔧 Quick Start
 
-### 1. Authentication
+### 1. Check Status
 ```bash
-# Authenticate with ErgoSum
+ergosum status
+# Shows authentication status, API connectivity, and integrations
+```
+
+### 2. Authentication
+```bash
+# Start authentication process
 ergosum auth login
 
-# Check authentication status
+# Check if you're logged in
 ergosum auth status
 ```
 
-### 2. Memory Management
+### 3. Store Your First Memory
 ```bash
-# Store a memory quickly
-ergosum add "React hooks are functions that let you use state"
+# Quick storage
+ergosum add "TypeScript interfaces help catch errors at compile time"
 
-# Store with more details
-ergosum memory store --title "React Hooks" --type CODE --tags "react,javascript"
-
-# Search memories
-ergosum search "react hooks"
-
-# List recent memories
-ergosum memory list --limit 10
+# Detailed storage with metadata
+ergosum memory store \
+  --title "TypeScript Best Practices" \
+  --type CODE \
+  --tags "typescript,development,best-practices"
 ```
 
-### 3. AI Tool Integration
+### 4. Search and Retrieve
+```bash
+# Quick search
+ergosum search "typescript"
+
+# Detailed search with options
+ergosum memory search "typescript interfaces" \
+  --limit 10 \
+  --format table
+```
+
+### 5. AI Integration
 ```bash
 # Setup Claude Code integration
 ergosum claude setup
 
-# Ask Claude with ErgoSum context
-ergosum claude ask "How do I use React hooks effectively?"
-
-# Preview context before sending
-ergosum claude context "react hooks"
+# Ask Claude with automatic context from your memories
+ergosum claude ask "How should I structure TypeScript interfaces?"
 ```
 
-## 📚 Commands
+## 📚 Complete Command Reference
 
 ### Authentication
-```bash
-ergosum auth login          # Login via OAuth or token
-ergosum auth logout         # Remove credentials
-ergosum auth status         # Check authentication status
-ergosum auth whoami         # Show user information
-```
+| Command | Description |
+|---------|-------------|
+| `ergosum auth login` | Authenticate with ErgoSum (OAuth or token) |
+| `ergosum auth logout` | Remove stored credentials |
+| `ergosum auth status` | Check authentication status |
+| `ergosum auth whoami` | Show current user information |
 
 ### Memory Management
-```bash
-ergosum memory store        # Store new memory
-ergosum memory list         # List memories
-ergosum memory search       # Search memories
-ergosum memory show <id>    # Show specific memory
-ergosum memory delete <id>  # Delete memory
-ergosum memory context      # Generate context from memories
-```
+| Command | Description |
+|---------|-------------|
+| `ergosum memory store` | Store new memory with interactive prompts |
+| `ergosum memory list` | List all memories with pagination |
+| `ergosum memory search <query>` | Search memories by content |
+| `ergosum memory show <id>` | Display specific memory details |
+| `ergosum memory delete <id>` | Remove a memory (with confirmation) |
+| `ergosum memory context <query>` | Generate context from relevant memories |
+
+### Cache Management
+| Command | Description |
+|---------|-------------|
+| `ergosum cache status` | Show cache statistics and hit rates |
+| `ergosum cache clear` | Clear all cached data |
+| `ergosum cache offline` | Enable offline mode with persistence |
+| `ergosum cache online` | Disable offline mode |
+| `ergosum cache warmup` | Pre-load frequently accessed data |
 
 ### Claude Code Integration
-```bash
-ergosum claude setup        # Setup Claude integration
-ergosum claude ask          # Ask Claude with context
-ergosum claude context      # Preview context
-ergosum claude wrap         # Wrap Claude commands
-```
+| Command | Description |
+|---------|-------------|
+| `ergosum claude setup` | Configure Claude Code integration |
+| `ergosum claude ask <question>` | Ask Claude with ErgoSum context |
+| `ergosum claude context <query>` | Preview context that would be sent |
+| `ergosum claude wrap <command>` | Wrap any Claude command with context |
 
 ### Configuration
+| Command | Description |
+|---------|-------------|
+| `ergosum config list` | Show all configuration settings |
+| `ergosum config get <key>` | Get specific configuration value |
+| `ergosum config set <key> <value>` | Set configuration value |
+| `ergosum config setup` | Interactive configuration wizard |
+
+### Quick Shortcuts
+| Command | Description |
+|---------|-------------|
+| `ergosum add <content>` | Quick memory storage |
+| `ergosum search <query>` | Quick memory search |
+| `ergosum status` | Overall CLI health check |
+
+## 💡 Usage Examples
+
+### Development Workflow
 ```bash
-ergosum config setup        # Interactive setup
-ergosum config get          # Show configuration
-ergosum config set          # Set configuration values
-ergosum config list         # List all settings
+# Store a code snippet you discovered
+ergosum add "Use React.memo() to prevent unnecessary re-renders" \
+  --tags "react,performance,optimization"
+
+# Later, when working on optimization
+ergosum claude ask "How can I optimize this React component?" 
+# Automatically includes your stored context about React.memo()
 ```
 
-### Quick Commands
+### Research and Learning
 ```bash
-ergosum search <query>      # Quick memory search
-ergosum add <content>       # Quick memory storage
-ergosum status              # CLI health check
-```
-
-## 🔗 AI Tool Integrations
-
-### Claude Code
-The CLI seamlessly integrates with Claude Code by injecting relevant ErgoSum memories as context:
-
-```bash
-# Ask Claude with automatic context injection
-ergosum claude ask "How to optimize React performance?"
-
-# Preview what context would be sent
-ergosum claude context "React performance"
-
-# Wrap any Claude command with context
-ergosum claude wrap --context "React" ask "Best practices?"
-```
-
-### Other AI Tools
-Support for additional tools:
-- **Codex**: GitHub Codex CLI integration
-- **Gemini CLI**: Google Gemini CLI integration  
-- **Cursor**: Cursor CLI integration
-
-## 📖 Usage Examples
-
-### Store Development Notes
-```bash
-# Store a code snippet
+# Store research findings
 ergosum memory store \
-  --title "React useEffect cleanup" \
-  --type CODE \
-  --tags "react,hooks,cleanup" \
-  --content "useEffect(() => {
-    const subscription = subscribe();
-    return () => subscription.unsubscribe();
-  }, []);"
+  --title "Database Indexing Strategies" \
+  --type DOCUMENT \
+  --tags "database,performance,postgresql" \
+  --content "B-tree indexes work best for equality and range queries..."
+
+# Search when needed
+ergosum search "database indexing" --format json | jq '.memories[].title'
 ```
 
-### Search and Use Context
+### Working Offline
 ```bash
-# Search for React-related memories
-ergosum search "react performance" --limit 5
+# Enable offline mode
+ergosum cache offline
 
-# Generate context for AI tools
-ergosum memory context "react optimization" --format markdown
+# Warm up cache with frequently used data
+ergosum cache warmup --limit 50
 
-# Use with Claude Code directly
-ergosum claude ask "How to prevent unnecessary re-renders?" \
-  --context "react performance"
+# Now you can search and access memories without internet
+ergosum search "react hooks"  # Uses cached data
 ```
 
-### Batch Operations
+### Debugging and Monitoring
 ```bash
-# Store multiple memories from files
-find ./docs -name "*.md" -exec ergosum memory store --file {} --tags "docs" \;
+# Enable debug logging
+DEBUG=1 ergosum --verbose memory list
 
-# Export memories to files
-ergosum memory list --format json > memories.json
+# Check cache performance
+ergosum cache status
+
+# View detailed logs
+tail -f ~/.cache/ergosum-cli/ergosum-cli.log
 ```
 
 ## ⚙️ Configuration
 
-The CLI uses a configuration file stored at:
+### Configuration File Location
 - **macOS/Linux**: `~/.config/ergosum-cli/config.json`
 - **Windows**: `%APPDATA%\ergosum-cli\config.json`
 
-### Default Configuration
+### Environment Variables
+```bash
+# API Configuration
+export ERGOSUM_API_URL="https://api.ergosum.cc/api/v1"
+export ERGOSUM_TOKEN="your-access-token"
+
+# Debugging
+export DEBUG=1           # Enable debug output
+export VERBOSE=1         # Enable verbose logging
+export LOG_FILE=1        # Enable file logging
+```
+
+### Default Settings
 ```json
 {
   "apiUrl": "https://api.ergosum.cc/api/v1",
   "defaultTags": ["cli"],
+  "offlineMode": false,
   "integrations": {
-    "claudeCode": false,
+    "claudeCode": true,
     "codex": false,
     "gemini": false
   }
 }
 ```
 
-### Environment Variables
+## 🎯 Advanced Features
+
+### Smart Caching
+- **Memory Cache**: Hot data cached for 5 minutes
+- **Disk Cache**: Persistent storage for offline mode
+- **Auto-Invalidation**: Cache cleared when data changes
+- **Hit Rate Monitoring**: Track cache performance
+
+### Error Recovery
+- **Automatic Retry**: Failed requests retry with exponential backoff
+- **Graceful Degradation**: Falls back to cached data when offline
+- **User-Friendly Messages**: Clear error explanations with next steps
+
+### Performance Monitoring
 ```bash
-export ERGOSUM_API_URL="https://api.ergosum.cc/api/v1"
-export ERGOSUM_TOKEN="your-token-here"
-export DEBUG=1  # Enable verbose logging
+# View cache statistics
+ergosum cache status
+
+# Monitor API performance  
+DEBUG=1 ergosum memory list  # Shows request timing
 ```
 
-## 🏗️ Architecture
+## 🔐 Security & Privacy
 
-### Core Components
-- **API Client**: HTTP client for ErgoSum REST API
-- **Context Injector**: Intelligent context generation for AI tools
-- **Config Manager**: Secure configuration and credential storage
-- **Command System**: Extensible command structure with Commander.js
+- **Secure Authentication**: OAuth2 flow with ErgoSum platform
+- **Local Storage**: Credentials stored securely using OS keychain
+- **Input Validation**: All inputs sanitized and validated
+- **HTTPS Only**: All API communication encrypted
+- **Privacy First**: Context processing happens locally
 
-### AI Tool Integration
-The CLI uses a plugin-based system to integrate with different AI tools:
+## 🛠️ Development
 
-```typescript
-interface AITool {
-  name: string;
-  command: string;
-  contextFlag?: string;
-  supportedFormats: string[];
-}
-```
+### Requirements
+- Node.js 18+ 
+- npm or yarn
+- TypeScript 5+
 
-Each tool integration can:
-- Search relevant memories based on user queries
-- Format context in the tool's preferred format
-- Inject context via command-line flags or files
-- Wrap existing tool commands transparently
-
-## 🔐 Security
-
-- **OAuth Authentication**: Secure authentication via ErgoSum platform
-- **Token Storage**: Encrypted credential storage using OS keychain
-- **API Security**: HTTPS-only communication with proper error handling
-- **Privacy**: Local context processing with user control over data sharing
-
-## 🤝 Contributing
-
-### Development Setup
+### Local Development
 ```bash
-git clone https://github.com/TwoErgoSum/ErgoSum-cli.git
-cd ErgoSum-cli
+git clone https://github.com/TwoErgoSum/ErgoSum-CLI.git
+cd ErgoSum-CLI
 npm install
-npm run dev  # Development mode with watch
-```
-
-### Running Tests
-```bash
-npm test
-npm run test:watch
-npm run test:coverage
+npm run dev  # Watch mode for development
 ```
 
 ### Building
 ```bash
-npm run build
-npm run typecheck
-npm run lint
+npm run build      # Compile TypeScript
+npm run typecheck  # Type checking only
+npm run lint       # Code linting
+```
+
+### Testing
+```bash
+npm test           # Run test suite
+npm run test:watch # Watch mode
+npm run test:coverage # Coverage report
 ```
 
 ## 📄 License
 
-MIT - see [LICENSE](LICENSE) file for details.
+MIT License - see [LICENSE](LICENSE) file for details.
 
 ## 🔗 Links
 
-- **Documentation**: [docs.ergosum.cc](https://docs.ergosum.cc)
-- **GitHub**: [github.com/TwoErgoSum/ErgoSum-cli](https://github.com/TwoErgoSum/ErgoSum-cli)
-- **Issues**: [github.com/TwoErgoSum/ErgoSum-cli/issues](https://github.com/TwoErgoSum/ErgoSum-cli/issues)
+- **npm Package**: [npmjs.com/package/ergosum-cli](https://npmjs.com/package/ergosum-cli)
+- **GitHub Repository**: [github.com/TwoErgoSum/ErgoSum-CLI](https://github.com/TwoErgoSum/ErgoSum-CLI)
+- **Report Issues**: [github.com/TwoErgoSum/ErgoSum-CLI/issues](https://github.com/TwoErgoSum/ErgoSum-CLI/issues)
 - **ErgoSum Platform**: [ergosum.cc](https://ergosum.cc)
 
 ---
 
-**ErgoSum CLI** - Supercharge your AI tools with persistent memory and context 🧠✨
+**ErgoSum CLI v0.2.0** - Enterprise-ready CLI for AI-powered memory management 🧠⚡
