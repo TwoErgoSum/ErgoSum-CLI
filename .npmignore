@@ -1,0 +1,46 @@
+# Source files
+src/
+tsconfig.json
+.eslintrc.js
+
+# Development files
+*.log
+.DS_Store
+.vscode/
+.idea/
+
+# Test files
+test/
+tests/
+*.test.ts
+*.test.js
+__tests__/
+
+# Git
+.git
+.gitignore
+
+# CI/CD
+.github/
+.travis.yml
+.circleci/
+
+# Documentation (except README.md)
+docs/
+*.md
+!README.md
+
+# Dependencies
+node_modules/
+
+# Build artifacts
+coverage/
+.nyc_output/
+
+# Environment
+.env
+.env.*
+
+# Lock files (keep package-lock.json for reproducible builds)
+yarn.lock
+pnpm-lock.yaml

@@ -13,9 +13,13 @@ A powerful command-line interface for integrating ErgoSum memory and context wit
 
 ## 📦 Installation
 
-### From npm (coming soon)
+### From npm
 ```bash
 npm install -g ergosum-cli
+
+# Or use shorter alias
+npm install -g ergosum-cli
+# Then use: ergosum or egs
 ```
 
 ### From source
