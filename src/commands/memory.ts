@@ -1,11 +1,14 @@
 import { Command } from 'commander';
 import inquirer from 'inquirer';
 import chalk from 'chalk';
-import ora from 'ora';
 import { apiClient } from '../lib/api-client';
 import { contextInjector } from '../lib/context-injector';
 import { MemoryType, SearchOptions } from '../types';
 import { config } from '../lib/config';
+import { logger } from '../lib/logger';
+import { ErrorHandler } from '../lib/errors';
+import { withProgress, createSpinner, createProgressBar } from '../lib/progress';
+import { validateSearchOptions } from '../lib/validation';
 
 export function createMemoryCommand(): Command {
   const memory = new Command('memory')
@@ -82,23 +85,31 @@ export function createMemoryCommand(): Command {
         const defaultTags = config.get('defaultTags') || [];
         const allTags = [...new Set([...tags, ...defaultTags])];
 
-        const spinner = ora('Storing memory...').start();
-        
-        const response = await apiClient.storeMemory({
-          content: content.trim(),
-          title: title?.trim(),
-          type,
-          tags: allTags,
-          metadata: {
-            source: 'cli',
-            timestamp: new Date().toISOString(),
-          },
+        const response = await withProgress(
+          () => apiClient.storeMemory({
+            content: content.trim(),
+            title: title?.trim(),
+            type,
+            tags: allTags,
+            metadata: {
+              source: 'cli',
+              timestamp: new Date().toISOString(),
+            },
+          }),
+          'Storing memory...',
+          'Memory stored successfully'
+        );
+
+        logger.info('Memory stored', { 
+          id: response.id, 
+          contentLength: content.trim().length,
+          tags: allTags.length 
         });
 
-        spinner.succeed(`Memory stored successfully (ID: ${response.id})`);
-
       } catch (error) {
-        console.error(chalk.red('Failed to store memory:'), (error as Error).message);
+        const ergoError = ErrorHandler.handle(error, 'memory_store');
+        console.error(chalk.red('Failed to store memory:'), ErrorHandler.getUserMessage(ergoError));
+        logger.logError(ergoError, { context: 'memory_store', options });
         process.exit(1);
       }
     });
@@ -124,10 +135,11 @@ export function createMemoryCommand(): Command {
           offset: parseInt(options.offset),
         };
 
-        const spinner = ora('Fetching memories...').start();
-        
-        const response = await apiClient.listMemories(searchOptions);
-        spinner.stop();
+        const response = await withProgress(
+          () => apiClient.listMemories(searchOptions),
+          'Fetching memories...',
+          'Memories retrieved successfully'
+        );
 
         if (response.memories.length === 0) {
           console.log(chalk.yellow('No memories found'));
@@ -193,10 +205,11 @@ export function createMemoryCommand(): Command {
     .option('--format <format>', 'Output format (text, json, yaml)', 'text')
     .action(async (id, options) => {
       try {
-        const spinner = ora('Fetching memory...').start();
-        
-        const memory = await apiClient.getMemory(id);
-        spinner.stop();
+        const memory = await withProgress(
+          () => apiClient.getMemory(id),
+          'Fetching memory...',
+          'Memory retrieved successfully'
+        );
 
         switch (options.format) {
           case 'json':
@@ -249,10 +262,11 @@ export function createMemoryCommand(): Command {
           }
         }
 
-        const spinner = ora('Deleting memory...').start();
-        
-        await apiClient.deleteMemory(id);
-        spinner.succeed('Memory deleted successfully');
+        await withProgress(
+          () => apiClient.deleteMemory(id),
+          'Deleting memory...',
+          'Memory deleted successfully'
+        );
 
       } catch (error) {
         console.error(chalk.red('Failed to delete memory:'), (error as Error).message);
@@ -270,7 +284,8 @@ export function createMemoryCommand(): Command {
     .option('-o, --output <file>', 'Save context to file')
     .action(async (query, options) => {
       try {
-        const spinner = ora('Searching for relevant context...').start();
+        const spinner = createSpinner('Searching for relevant context...');
+        spinner.start();
         
         const memories = await contextInjector.searchRelevantMemories(query, {
           limit: parseInt(options.limit),

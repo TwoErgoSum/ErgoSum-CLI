@@ -7,6 +7,7 @@ import { createAuthCommand } from './commands/auth';
 import { createMemoryCommand } from './commands/memory';
 import { createClaudeCommand } from './commands/claude';
 import { createConfigCommand } from './commands/config';
+import { createCacheCommand } from './commands/cache';
 
 // Package info
 const packageInfo = require('../package.json');
@@ -38,6 +39,7 @@ program.addCommand(createAuthCommand());
 program.addCommand(createMemoryCommand());
 program.addCommand(createClaudeCommand());
 program.addCommand(createConfigCommand());
+program.addCommand(createCacheCommand());
 
 // Add quick shortcuts for common operations
 program

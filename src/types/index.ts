@@ -35,6 +35,7 @@ export interface CLIConfig {
   userId?: string;
   organizationId?: string;
   defaultTags: string[];
+  offlineMode?: boolean;
   integrations: {
     claudeCode: boolean;
     codex: boolean;
