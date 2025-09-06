@@ -85,26 +85,37 @@ export function createMemoryCommand(): Command {
         const defaultTags = config.get('defaultTags') || [];
         const allTags = [...new Set([...tags, ...defaultTags])];
 
-        const response = await withProgress(
-          () => apiClient.storeMemory({
-            content: content.trim(),
+        const response = await apiClient.storeMemory({
+          content: content.trim(),
+          title: title?.trim(),
+          type,
+          tags: allTags,
+          metadata: {
+            source: 'cli',
+            timestamp: new Date().toISOString(),
+          },
+        });
+
+        // Output JSON for AI consumption
+        console.log(JSON.stringify({
+          success: true,
+          action: 'memory_stored',
+          data: {
+            id: response.id,
             title: title?.trim(),
             type,
             tags: allTags,
-            metadata: {
-              source: 'cli',
-              timestamp: new Date().toISOString(),
-            },
-          }),
-          'Storing memory...',
-          'Memory stored successfully'
-        );
+            contentLength: content.trim().length,
+            timestamp: new Date().toISOString(),
+          }
+        }, null, 2));
 
         logger.info('Memory stored', { 
           id: response.id, 
           contentLength: content.trim().length,
           tags: allTags.length 
         });
+        process.exit(0);
 
       } catch (error) {
         const ergoError = ErrorHandler.handle(error, 'memory_store');
@@ -124,7 +135,7 @@ export function createMemoryCommand(): Command {
     .option('--type <type>', 'Filter by type (TEXT, CODE, IMAGE, DOCUMENT)')
     .option('-l, --limit <limit>', 'Number of results', '10')
     .option('--offset <offset>', 'Offset for pagination', '0')
-    .option('--format <format>', 'Output format (table, json, yaml)', 'table')
+    .option('--format <format>', 'Output format (json, table, yaml)', 'json')
     .action(async (options) => {
       try {
         const searchOptions: SearchOptions = {
@@ -143,7 +154,7 @@ export function createMemoryCommand(): Command {
 
         if (response.memories.length === 0) {
           console.log(chalk.yellow('No memories found'));
-          return;
+          process.exit(0);
         }
 
         switch (options.format) {
@@ -174,6 +185,7 @@ export function createMemoryCommand(): Command {
             }
             break;
         }
+        process.exit(0);
 
       } catch (error) {
         console.error(chalk.red('Failed to list memories:'), (error as Error).message);
@@ -188,7 +200,7 @@ export function createMemoryCommand(): Command {
     .option('-t, --tags <tags>', 'Filter by tags (comma-separated)')
     .option('--type <type>', 'Filter by type')
     .option('-l, --limit <limit>', 'Number of results', '10')
-    .option('--format <format>', 'Output format (table, json, context)', 'table')
+    .option('--format <format>', 'Output format (json, table, context)', 'json')
     .action(async (query, options) => {
       // Reuse list command logic with query
       await memory.commands.find(cmd => cmd.name() === 'list')
@@ -202,7 +214,7 @@ export function createMemoryCommand(): Command {
   memory
     .command('show <id>')
     .description('Show a specific memory')
-    .option('--format <format>', 'Output format (text, json, yaml)', 'text')
+    .option('--format <format>', 'Output format (json, text, yaml)', 'json')
     .action(async (id, options) => {
       try {
         const memory = await withProgress(
@@ -231,6 +243,7 @@ export function createMemoryCommand(): Command {
             console.log(memory.content);
             break;
         }
+        process.exit(0);
 
       } catch (error) {
         console.error(chalk.red('Failed to fetch memory:'), (error as Error).message);
@@ -258,15 +271,23 @@ export function createMemoryCommand(): Command {
 
           if (!confirm) {
             console.log('Cancelled');
-            return;
+            process.exit(0);
           }
         }
 
-        await withProgress(
-          () => apiClient.deleteMemory(id),
-          'Deleting memory...',
-          'Memory deleted successfully'
-        );
+        await apiClient.deleteMemory(id);
+        
+        // Output JSON for AI consumption
+        console.log(JSON.stringify({
+          success: true,
+          action: 'memory_deleted',
+          data: {
+            id,
+            timestamp: new Date().toISOString(),
+          }
+        }, null, 2));
+        
+        process.exit(0);
 
       } catch (error) {
         console.error(chalk.red('Failed to delete memory:'), (error as Error).message);
@@ -312,6 +333,7 @@ export function createMemoryCommand(): Command {
         } else {
           console.log(context);
         }
+        process.exit(0);
 
       } catch (error) {
         console.error(chalk.red('Failed to generate context:'), (error as Error).message);

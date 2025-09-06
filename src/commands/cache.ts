@@ -32,6 +32,7 @@ export function createCacheCommand(): Command {
         }
 
         logger.info('Cache status displayed', { stats, offlineMode });
+        process.exit(0);
       } catch (error) {
         const ergoError = ErrorHandler.handle(error, 'cache_status');
         console.error(chalk.red('Failed to get cache status:'), ErrorHandler.getUserMessage(ergoError));
@@ -59,13 +60,14 @@ export function createCacheCommand(): Command {
 
           if (!confirm) {
             console.log(chalk.yellow('Cache clear cancelled'));
-            return;
+            process.exit(0);
           }
         }
 
         cacheManager.clear();
         console.log(chalk.green('✅ All cached data cleared'));
         logger.info('Cache cleared by user');
+        process.exit(0);
       } catch (error) {
         const ergoError = ErrorHandler.handle(error, 'cache_clear');
         console.error(chalk.red('Failed to clear cache:'), ErrorHandler.getUserMessage(ergoError));
@@ -86,6 +88,7 @@ export function createCacheCommand(): Command {
         console.log(chalk.gray('   • Use "ergosum cache online" to disable'));
         
         logger.info('Offline mode enabled by user');
+        process.exit(0);
       } catch (error) {
         const ergoError = ErrorHandler.handle(error, 'cache_offline');
         console.error(chalk.red('Failed to enable offline mode:'), ErrorHandler.getUserMessage(ergoError));
@@ -105,6 +108,7 @@ export function createCacheCommand(): Command {
         console.log(chalk.gray('   • Only memory caching active'));
         
         logger.info('Offline mode disabled by user');
+        process.exit(0);
       } catch (error) {
         const ergoError = ErrorHandler.handle(error, 'cache_online');
         console.error(chalk.red('Failed to disable offline mode:'), ErrorHandler.getUserMessage(ergoError));
@@ -143,6 +147,7 @@ export function createCacheCommand(): Command {
           'Warming up cache...',
           `Cache warmed up with ${options.limit} memories`
         );
+        process.exit(0);
 
       } catch (error) {
         const ergoError = ErrorHandler.handle(error, 'cache_warmup');
@@ -174,6 +179,7 @@ export function createCacheCommand(): Command {
         }
         
         logger.info('Cache pruned', { removed, remaining: statsAfter.keys });
+        process.exit(0);
       } catch (error) {
         const ergoError = ErrorHandler.handle(error, 'cache_prune');
         console.error(chalk.red('Failed to prune cache:'), ErrorHandler.getUserMessage(ergoError));

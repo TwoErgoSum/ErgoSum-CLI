@@ -33,6 +33,7 @@ export function createConfigCommand(): Command {
 
         config.set(key as keyof CLIConfig, parsedValue);
         console.log(chalk.green(`✅ Set ${key} = ${JSON.stringify(parsedValue)}`));
+        process.exit(0);
         
       } catch (error) {
         console.error(chalk.red('Failed to set configuration:'), (error as Error).message);
@@ -69,6 +70,7 @@ export function createConfigCommand(): Command {
         console.error(chalk.red('Failed to get configuration:'), (error as Error).message);
         process.exit(1);
       }
+      process.exit(0);
     });
 
   // Unset command
@@ -79,6 +81,7 @@ export function createConfigCommand(): Command {
       try {
         config.delete(key as keyof CLIConfig);
         console.log(chalk.green(`✅ Removed ${key}`));
+        process.exit(0);
       } catch (error) {
         console.error(chalk.red('Failed to unset configuration:'), (error as Error).message);
         process.exit(1);
@@ -109,6 +112,7 @@ export function createConfigCommand(): Command {
         const status = enabled ? chalk.green('Enabled') : chalk.gray('Disabled');
         console.log(`  ${chalk.cyan(tool)}: ${status}`);
       });
+      process.exit(0);
     });
 
   // Setup command - interactive configuration
@@ -181,6 +185,7 @@ export function createConfigCommand(): Command {
           console.log(chalk.yellow('\nTo start using ErgoSum CLI, authenticate with:'));
           console.log(chalk.gray('  ergosum auth login'));
         }
+        process.exit(0);
 
       } catch (error) {
         console.error(chalk.red('Setup failed:'), (error as Error).message);
@@ -207,13 +212,14 @@ export function createConfigCommand(): Command {
 
           if (!confirm) {
             console.log('Cancelled');
-            return;
+            process.exit(0);
           }
         }
 
         config.clear();
         console.log(chalk.green('✅ Configuration reset to defaults'));
         console.log(chalk.gray('Run "ergosum config setup" to reconfigure'));
+        process.exit(0);
 
       } catch (error) {
         console.error(chalk.red('Failed to reset configuration:'), (error as Error).message);
