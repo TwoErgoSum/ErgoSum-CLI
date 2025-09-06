@@ -65,7 +65,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/TwoErgoSum/ErgoSum-cli.git"
+    "url": "git+https://github.com/TwoErgoSum/ErgoSum-cli.git"
   },
   "bugs": {
     "url": "https://github.com/TwoErgoSum/ErgoSum-cli/issues"
