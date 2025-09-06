@@ -22,12 +22,12 @@ winston.addColors(colors);
 
 // Determine log level based on environment
 const level = () => {
-  const env = process.env.NODE_ENV || 'development';
-  const isDevelopment = env === 'development';
-  const isDebug = process.env.DEBUG || process.env.VERBOSE;
+  // Only show debug logs when explicitly requested
+  if (process.env.DEBUG === '1' || process.env.VERBOSE === '1') return 'debug';
+  if (process.env.NODE_ENV === 'test') return 'error';
   
-  if (isDebug) return 'debug';
-  return isDevelopment ? 'debug' : 'warn';
+  // Default to error level to keep output clean for end users
+  return 'error';
 };
 
 // Console format
@@ -48,10 +48,10 @@ const fileFormat = winston.format.combine(
 
 // Create transports
 const transports: winston.transport[] = [
-  // Console transport
+  // Console transport - only show when debugging is explicitly enabled
   new winston.transports.Console({
     format: consoleFormat,
-    silent: process.env.NODE_ENV === 'test',
+    silent: process.env.NODE_ENV === 'test' || (!process.env.DEBUG && !process.env.VERBOSE),
   }),
 ];
 

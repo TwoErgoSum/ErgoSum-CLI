@@ -1,6 +1,6 @@
 {
   "name": "ergosum-cli",
-  "version": "0.4.6",
+  "version": "0.4.7",
   "description": "Simple AI-friendly CLI for ErgoSum memory management. Perfect for Claude and other AI assistants.",
   "main": "dist/cli.js",
   "bin": {

@@ -9,7 +9,7 @@ const program = new Command();
 program
   .name('ergosum')
   .description('AI-friendly memory management for ErgoSum')
-  .version('0.4.6');
+  .version('0.4.7');
 
 // Core AI-friendly commands (JSON output by default)
 program
