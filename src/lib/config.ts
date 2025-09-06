@@ -1,5 +1,5 @@
 import Configstore from 'configstore';
-import { CLIConfig } from '../types';
+import { CLIConfig } from '../types/index.js';
 
 export class ConfigManager {
   private config: Configstore;

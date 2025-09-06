@@ -15,7 +15,7 @@ export class ErgoSumAPIClient {
       baseURL: config.get('apiUrl'),
       timeout: 30000,
       headers: {
-        'User-Agent': 'ErgoSum-CLI/0.1.0',
+        'User-Agent': 'ErgoSum-CLI/0.4.6',
         'Accept': 'application/json',
         'Content-Type': 'application/json',
       },
@@ -182,8 +182,8 @@ export class ErgoSumAPIClient {
   }
 
   async getProfile(): Promise<any> {
-    const response = await this.client.get('/auth/profile');
-    return response.data;
+    const response = await this.client.get('/debug/me');
+    return response.data.user;
   }
 
   // Retry mechanism with exponential backoff

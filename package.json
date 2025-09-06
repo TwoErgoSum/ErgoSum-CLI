@@ -1,6 +1,6 @@
 {
   "name": "ergosum-cli",
-  "version": "0.4.0",
+  "version": "0.4.6",
   "description": "Simple AI-friendly CLI for ErgoSum memory management. Perfect for Claude and other AI assistants.",
   "main": "dist/cli.js",
   "bin": {
@@ -36,16 +36,29 @@
   ],
   "dependencies": {
     "@types/open": "^6.1.0",
+    "axios": "^1.6.0",
+    "chalk": "^4.1.2",
+    "cli-progress": "^3.12.0",
     "commander": "^11.1.0",
     "configstore": "^7.0.0",
+    "inquirer": "^8.2.6",
+    "joi": "^17.11.0",
+    "listr2": "^7.0.2",
+    "node-cache": "^5.1.2",
     "node-fetch": "^3.3.2",
-    "open": "^8.4.2"
+    "open": "^8.4.2",
+    "ora": "^7.0.1",
+    "winston": "^3.11.0",
+    "yaml": "^2.3.4"
   },
   "devDependencies": {
+    "@types/cli-progress": "^3.11.5",
     "@types/configstore": "^6.0.2",
     "@types/inquirer": "^8.2.10",
     "@types/jest": "^29.5.8",
     "@types/node": "^20.10.0",
+    "@types/node-cache": "^4.2.5",
+    "@types/winston": "^2.4.4",
     "@typescript-eslint/eslint-plugin": "^6.13.0",
     "@typescript-eslint/parser": "^6.13.0",
     "eslint": "^8.55.0",

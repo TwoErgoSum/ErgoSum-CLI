@@ -1,5 +1,5 @@
-import { apiClient } from '../lib/api-client';
-import { config } from '../lib/config';
+import { apiClient } from '../lib/api-client.js';
+import { config } from '../lib/config.js';
 
 export async function searchMemories(query: string, options: any) {
   try {
