@@ -180,10 +180,151 @@ export function createClaudeCommand(): Command {
         console.log(chalk.blue('You can now use:'));
         console.log(chalk.gray('  ergosum claude ask "your question"'));
         console.log(chalk.gray('  ergosum claude context "search query"'));
+        console.log(chalk.gray('  ergosum claude install-wrapper  # For seamless integration'));
 
       } catch (error) {
         console.error(chalk.red('Setup failed:'), (error as Error).message);
         process.exit(1);
+      }
+    });
+
+  // Install automatic wrapper - NEW FEATURE!
+  claude
+    .command('install-wrapper')
+    .description('Install automatic ErgoSum integration for Claude Code')
+    .option('--force', 'Overwrite existing wrapper')
+    .action(async (options) => {
+      try {
+        console.log(chalk.blue('🔧 Installing seamless ErgoSum → Claude Code integration...\n'));
+
+        const fs = require('fs');
+        const path = require('path');
+        const os = require('os');
+
+        // Create wrapper script location
+        const binDir = path.join(os.homedir(), '.local', 'bin');
+        const wrapperPath = path.join(binDir, 'claude');
+        const originalClaudePath = '/usr/local/bin/claude'; // Common installation path
+
+        // Check if wrapper already exists
+        if (fs.existsSync(wrapperPath) && !options.force) {
+          const { overwrite } = await require('inquirer').prompt([
+            {
+              type: 'confirm',
+              name: 'overwrite',
+              message: 'Claude wrapper already exists. Overwrite?',
+              default: false,
+            },
+          ]);
+
+          if (!overwrite) {
+            console.log(chalk.yellow('Installation cancelled'));
+            return;
+          }
+        }
+
+        // Ensure bin directory exists
+        if (!fs.existsSync(binDir)) {
+          fs.mkdirSync(binDir, { recursive: true });
+          console.log(chalk.green(`✅ Created ${binDir}`));
+        }
+
+        // Find original Claude installation
+        let originalPath = originalClaudePath;
+        try {
+          const { execSync } = require('child_process');
+          const whichResult = execSync('which claude', { encoding: 'utf8' }).trim();
+          if (whichResult && whichResult !== wrapperPath) {
+            originalPath = whichResult;
+          }
+        } catch {
+          // Use default path
+        }
+
+        // Create the magical wrapper script
+        const wrapperScript = `#!/bin/bash
+# ErgoSum-Enhanced Claude Code Wrapper
+# Automatically injects relevant context from your ErgoSum memories
+
+# Colors for pretty output
+BLUE='\\033[0;34m'
+GRAY='\\033[0;90m'
+NC='\\033[0m' # No Color
+
+# Check if this is an 'ask' command that would benefit from context
+if [[ "$1" == "ask" ]] && [[ -n "$2" ]]; then
+    echo -e "\${BLUE}🧠 Enhancing Claude with your ErgoSum memories...\${NC}" >&2
+    
+    # Use ErgoSum to handle the ask with automatic context injection
+    ergosum claude ask "\${@:2}"
+    exit $?
+fi
+
+# For non-ask commands, pass through to original Claude
+if [[ -f "${originalPath}" ]]; then
+    "${originalPath}" "$@"
+else
+    echo "Error: Original Claude Code CLI not found at ${originalPath}" >&2
+    echo "Please ensure Claude Code is properly installed" >&2
+    exit 1
+fi
+`;
+
+        // Write the wrapper
+        fs.writeFileSync(wrapperPath, wrapperScript);
+        fs.chmodSync(wrapperPath, '755');
+
+        console.log(chalk.green('✅ ErgoSum Claude wrapper installed successfully!\n'));
+
+        // Check PATH configuration
+        const currentPath = process.env.PATH || '';
+        const hasLocalBin = currentPath.includes(`${os.homedir()}/.local/bin`);
+
+        if (!hasLocalBin) {
+          console.log(chalk.yellow('⚠️  Setup required - Add to your shell profile:\n'));
+          console.log(chalk.white(`export PATH="$HOME/.local/bin:$PATH"`));
+          console.log(chalk.gray('\nAdd this line to:'));
+          console.log(chalk.gray('  • ~/.bashrc (for Bash)'));
+          console.log(chalk.gray('  • ~/.zshrc (for Zsh)'));
+          console.log(chalk.gray('  • ~/.config/fish/config.fish (for Fish)\n'));
+          console.log(chalk.gray('Then restart your terminal or run: source ~/.bashrc\n'));
+        }
+
+        console.log(chalk.blue('🎉 Now you can use Claude Code normally:\n'));
+        console.log(chalk.white('claude ask "How do I optimize this React component?"'));
+        console.log(chalk.gray('↳ Automatically includes your React optimization memories!\n'));
+        console.log(chalk.white('claude ask "What are PostgreSQL best practices?"'));
+        console.log(chalk.gray('↳ Automatically includes your database knowledge!\n'));
+
+        console.log(chalk.green('🚀 Your Claude Code is now supercharged with ErgoSum!'));
+
+      } catch (error) {
+        console.error(chalk.red('Installation failed:'), (error as Error).message);
+        process.exit(1);
+      }
+    });
+
+  // Uninstall wrapper
+  claude
+    .command('uninstall-wrapper')
+    .description('Remove ErgoSum Claude wrapper (restore original)')
+    .action(() => {
+      try {
+        const fs = require('fs');
+        const path = require('path');
+        const os = require('os');
+
+        const wrapperPath = path.join(os.homedir(), '.local', 'bin', 'claude');
+        
+        if (fs.existsSync(wrapperPath)) {
+          fs.unlinkSync(wrapperPath);
+          console.log(chalk.green('✅ ErgoSum Claude wrapper removed'));
+          console.log(chalk.gray('Your original Claude Code CLI is now active again'));
+        } else {
+          console.log(chalk.yellow('No ErgoSum wrapper found'));
+        }
+      } catch (error) {
+        console.error(chalk.red('Failed to remove wrapper:'), (error as Error).message);
       }
     });
 
