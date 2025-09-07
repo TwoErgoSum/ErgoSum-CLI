@@ -143,7 +143,7 @@ program
     } catch (error) {
       console.log(JSON.stringify({
         error: true,
-        message: error.message,
+        message: error instanceof Error ? error.message : 'Unknown error',
         action: 'list-repos'
       }, null, 2));
       process.exit(1);
