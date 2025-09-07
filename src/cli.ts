@@ -125,6 +125,31 @@ program
     });
   });
 
+// List repositories
+program
+  .command('list-repos')
+  .alias('lr')
+  .description('List all repositories for current user')
+  .action(async () => {
+    try {
+      const { ErgoSumAPIClient } = await import('./lib/api-client.js');
+      const client = new ErgoSumAPIClient();
+      const repos = await client.getRepositories();
+      console.log(JSON.stringify({
+        success: true,
+        repositories: repos,
+        count: repos.length
+      }, null, 2));
+    } catch (error) {
+      console.log(JSON.stringify({
+        error: true,
+        message: error.message,
+        action: 'list-repos'
+      }, null, 2));
+      process.exit(1);
+    }
+  });
+
 program
   .command('fetch')
   .description('Fetch remote repository data without updating working directory')

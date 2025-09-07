@@ -1,5 +1,5 @@
 import axios, { AxiosInstance, AxiosRequestConfig } from 'axios';
-import { Memory, MemoryStoreRequest, MemoryListResponse, SearchOptions, ContextRepo, ContextCommit, ContentObject } from '../types';
+import { Memory, MemoryStoreRequest, MemoryListResponse, SearchOptions, ContextRepo, ContextCommit, ContentObject, ContextBranch } from '../types';
 import { config } from './config';
 import { logger } from './logger';
 import { ErrorHandler, ErgoSumError } from './errors';
