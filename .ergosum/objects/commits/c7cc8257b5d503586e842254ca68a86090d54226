@@ -1,0 +1,14 @@
+{
+  "id": "c7cc8257b5d503586e842254ca68a86090d54226",
+  "repo_id": "e1cb808c-b5e8-4c01-90fd-b5bbb83d8eb3",
+  "message": "Test commit for database storage verification",
+  "parent_id": "73b6ba1d5b2d744769f6702721fcb63d8dc2de0c",
+  "tree_id": "2d40ee98fcf183c077ab802bf89ea5ece7da68ae",
+  "author": "ErgoSum CLI User",
+  "timestamp": "2025-09-07T10:29:50.518Z",
+  "metadata": {
+    "files_changed": 1,
+    "additions": 297,
+    "deletions": 0
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "type": "file",
+  "content": "# Test File\\n\\nThis is test content for database storage.",
+  "encoding": "utf8",
+  "size": 50
+}

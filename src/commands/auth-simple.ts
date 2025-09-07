@@ -56,126 +56,60 @@ async function authenticateWithDesktop(): Promise<void> {
 async function authenticateWithBrowser(openBrowser: boolean = true): Promise<void> {
   console.log(chalk.blue('🔗 Authenticating with browser...'));
   
-  // Start local server to receive the token
-  const server = http.createServer();
-  const port = 3000;
+  // Generate a unique session ID for this authentication attempt
+  const sessionId = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+  const authUrl = `https://ergosum.cc/auth/cli?session=${sessionId}`;
   
-  try {
-    await new Promise<void>((resolve, reject) => {
-      server.listen(port, 'localhost', () => {
-        resolve();
+  if (openBrowser) {
+    try {
+      await open(authUrl);
+      console.log(chalk.gray('Browser opened, waiting for authentication...'));
+    } catch (error) {
+      console.log(chalk.yellow('Could not open browser automatically'));
+      console.log(chalk.blue(`Please open: ${authUrl}`));
+    }
+  }
+
+  console.log(chalk.gray('Waiting for authentication to complete in browser...'));
+  console.log(chalk.gray('This will automatically continue once you sign in.'));
+  
+  // Poll for authentication completion
+  const token = await pollForAuthToken(sessionId);
+  
+  console.log(chalk.green('✅ Authenticated successfully!'));
+  await authenticateWithToken(token);
+}
+
+async function pollForAuthToken(sessionId: string): Promise<string> {
+  const maxAttempts = 120; // 2 minutes with 1 second intervals
+  const apiUrl = config.get('apiUrl');
+  
+  for (let attempt = 0; attempt < maxAttempts; attempt++) {
+    try {
+      const response = await fetch(`${apiUrl}/auth/cli-session/${sessionId}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
       });
       
-      server.on('error', (err: any) => {
-        if (err.code === 'EADDRINUSE') {
-          console.log(chalk.yellow('Port 3000 is busy, falling back to manual token entry...'));
-          resolve();
-        } else {
-          reject(err);
+      if (response.ok) {
+        const result = await response.json() as { token?: string; error?: string };
+        if (result.token) {
+          return result.token;
         }
-      });
-    });
-    
-    const authUrl = `https://ergosum.cc/auth/cli?callback=${encodeURIComponent(`http://localhost:${port}/callback`)}`;
-    
-    if (openBrowser) {
-      try {
-        await open(authUrl);
-        console.log(chalk.gray('Browser opened, waiting for authentication...'));
-      } catch (error) {
-        console.log(chalk.yellow('Could not open browser automatically'));
-        console.log(chalk.blue(`Please open: ${authUrl}`));
       }
+      
+      // Wait 1 second before next attempt
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+    } catch (error) {
+      // Continue polling on network errors
+      await new Promise(resolve => setTimeout(resolve, 1000));
     }
-
-    // Wait for callback with token
-    const token = await new Promise<string>((resolve, reject) => {
-      const timeout = setTimeout(() => {
-        reject(new Error('Authentication timeout (2 minutes)'));
-      }, 120000);
-
-      server.on('request', (req, res) => {
-        const parsedUrl = url.parse(req.url || '', true);
-        
-        if (parsedUrl.pathname === '/callback') {
-          const token = parsedUrl.query.token as string;
-          
-          if (token) {
-            res.writeHead(200, { 'Content-Type': 'text/html' });
-            res.end(`
-              <!DOCTYPE html>
-              <html lang="en">
-                <head>
-                  <title>ErgoSum CLI Authentication</title>
-                  <meta charset="utf-8">
-                  <meta name="viewport" content="width=device-width, initial-scale=1">
-                  <script src="https://cdn.tailwindcss.com"></script>
-                </head>
-                <body class="min-h-screen bg-background text-foreground">
-                  <div class="min-h-screen flex items-center justify-center p-4">
-                    <div class="w-full max-w-md">
-                      <div class="bg-white border border-gray-200 rounded-lg shadow-sm p-6 text-center">
-                        <div class="mx-auto w-12 h-12 rounded-full bg-green-100 flex items-center justify-center mb-4">
-                          <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                          </svg>
-                        </div>
-                        <h1 class="text-xl font-semibold text-green-900 mb-2">
-                          CLI Authentication Successful!
-                        </h1>
-                        <p class="text-sm text-gray-600 mb-6">
-                          Your ErgoSum CLI is now authenticated and ready to use.
-                        </p>
-                        <div class="bg-gray-50 rounded-lg p-3 text-sm text-gray-600">
-                          This tab will close automatically in <span id="countdown" class="font-medium">3</span> seconds
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <script>
-                    let count = 3;
-                    const countdown = document.getElementById('countdown');
-                    const interval = setInterval(() => {
-                      count--;
-                      if (countdown) countdown.textContent = count.toString();
-                      if (count <= 0) {
-                        clearInterval(interval);
-                        window.close();
-                      }
-                    }, 1000);
-                  </script>
-                </body>
-              </html>
-            `);
-            clearTimeout(timeout);
-            server.close();
-            resolve(token);
-          } else {
-            res.writeHead(400, { 'Content-Type': 'text/html' });
-            res.end(`
-              <html>
-                <body style="font-family: Arial, sans-serif; text-align: center; padding: 50px;">
-                  <h1 style="color: red;">❌ Authentication Failed</h1>
-                  <p>No token received. Please try again.</p>
-                </body>
-              </html>
-            `);
-            server.close();
-            reject(new Error('No token received'));
-          }
-        }
-      });
-    });
-    
-    console.log(chalk.green('✅ Authenticated successfully!'));
-    await authenticateWithToken(token);
-
-  } catch (error) {
-    server.close();
-    console.log(chalk.yellow('\n⚠️  Automatic authentication timed out'));
-    console.log(chalk.gray('Please copy your token from the browser page:\n'));
-    await authenticateWithManualToken();
   }
+  
+  throw new Error('Authentication timeout (2 minutes)');
 }
 
 async function authenticateWithManualToken(): Promise<void> {

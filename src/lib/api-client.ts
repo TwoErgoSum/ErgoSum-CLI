@@ -1,5 +1,5 @@
 import axios, { AxiosInstance, AxiosRequestConfig } from 'axios';
-import { Memory, MemoryStoreRequest, MemoryListResponse, SearchOptions } from '../types';
+import { Memory, MemoryStoreRequest, MemoryListResponse, SearchOptions, ContextRepo, ContextCommit, ContentObject } from '../types';
 import { config } from './config';
 import { logger } from './logger';
 import { ErrorHandler, ErgoSumError } from './errors';
@@ -161,6 +161,145 @@ export class ErgoSumAPIClient {
     // Also clear list caches as they may contain this memory
     cacheManager.clear(); // Simple approach - clear all for now
     logger.debug(`Invalidated cache for memory ${id}`);
+  }
+
+  // Repository operations
+  async createRepository(repo: Omit<ContextRepo, 'id' | 'created_at' | 'updated_at'>): Promise<ContextRepo> {
+    try {
+      logger.debug('Creating repository', { name: repo.name, owner: repo.owner_id });
+      
+      const response = await this.withRetry(() => 
+        this.client.post('/repositories', repo)
+      );
+      
+      logger.info(`Repository created successfully: ${response.data.repository.name} (${response.data.repository.id})`);
+      return response.data.repository;
+    } catch (error) {
+      logger.error('Failed to create repository', { error, repo });
+      throw ErrorHandler.handle(error, 'create_repository');
+    }
+  }
+
+  async getRepositories(): Promise<ContextRepo[]> {
+    try {
+      const response = await this.client.get('/repositories');
+      return response.data.repositories;
+    } catch (error) {
+      logger.error('Failed to get repositories', { error });
+      throw ErrorHandler.handle(error, 'get_repositories');
+    }
+  }
+
+  async getRepository(id: string): Promise<ContextRepo> {
+    try {
+      const response = await this.client.get(`/repositories/${id}`);
+      return response.data.repository;
+    } catch (error) {
+      logger.error('Failed to get repository', { error, id });
+      throw ErrorHandler.handle(error, 'get_repository');
+    }
+  }
+
+  async pushCommits(repoId: string, commits: ContextCommit[]): Promise<void> {
+    try {
+      logger.debug('Pushing commits', { repoId, commitCount: commits.length });
+      
+      // Sort commits in dependency order (parents first)
+      const sortedCommits = this.sortCommitsByDependencies(commits);
+      
+      await this.withRetry(() => 
+        this.client.post(`/repositories/${repoId}/commits`, { commits: sortedCommits })
+      );
+      
+      logger.info(`Successfully pushed ${commits.length} commits to repository ${repoId}`);
+    } catch (error) {
+      logger.error('Failed to push commits', { error, repoId, commitCount: commits.length });
+      throw ErrorHandler.handle(error, 'push_commits');
+    }
+  }
+
+  private sortCommitsByDependencies(commits: ContextCommit[]): ContextCommit[] {
+    const commitMap = new Map(commits.map(c => [c.id, c]));
+    const visited = new Set<string>();
+    const sorted: ContextCommit[] = [];
+
+    function visit(commitId: string) {
+      if (visited.has(commitId)) return;
+      visited.add(commitId);
+
+      const commit = commitMap.get(commitId);
+      if (!commit) return;
+
+      // Visit parent first if it exists and is in our commit set
+      if (commit.parent_id && commitMap.has(commit.parent_id)) {
+        visit(commit.parent_id);
+      }
+
+      sorted.push(commit);
+    }
+
+    // Process all commits
+    for (const commit of commits) {
+      visit(commit.id);
+    }
+
+    return sorted;
+  }
+
+  async pushObjects(repoId: string, objects: ContentObject[]): Promise<void> {
+    try {
+      logger.debug('Pushing objects', { repoId, objectCount: objects.length });
+      
+      await this.withRetry(() => 
+        this.client.post(`/repositories/${repoId}/objects`, { objects })
+      );
+      
+      logger.info(`Successfully pushed ${objects.length} objects to repository ${repoId}`);
+    } catch (error) {
+      logger.error('Failed to push objects', { error, repoId, objectCount: objects.length });
+      throw ErrorHandler.handle(error, 'push_objects');
+    }
+  }
+
+  // Fetch operations
+  async fetchCommits(repoId: string, since?: string): Promise<ContextCommit[]> {
+    try {
+      let url = `/repositories/${repoId}/commits?fetch=true`;
+      if (since) {
+        url += `&since=${encodeURIComponent(since)}`;
+      }
+      
+      const response = await this.client.get(url);
+      return response.data.commits || [];
+    } catch (error) {
+      logger.error('Failed to fetch commits', { error, repoId });
+      throw ErrorHandler.handle(error, 'fetch_commits');
+    }
+  }
+
+  async fetchObjects(repoId: string, since?: string): Promise<ContentObject[]> {
+    try {
+      let url = `/repositories/${repoId}/objects?fetch=true`;
+      if (since) {
+        url += `&since=${encodeURIComponent(since)}`;
+      }
+      
+      const response = await this.client.get(url);
+      return response.data.objects || [];
+    } catch (error) {
+      logger.error('Failed to fetch objects', { error, repoId });
+      throw ErrorHandler.handle(error, 'fetch_objects');
+    }
+  }
+
+  async fetchBranches(repoId: string): Promise<ContextBranch[]> {
+    try {
+      const response = await this.client.get(`/repositories/${repoId}/branches`);
+      return response.data.branches || [];
+    } catch (error) {
+      logger.error('Failed to fetch branches', { error, repoId });
+      throw ErrorHandler.handle(error, 'fetch_branches');
+    }
   }
 
   // Utility methods

@@ -1,0 +1,8 @@
+{
+  "type": "file",
+  "content": "## Testing fetch/pull functionality\n\nAll new features are working:\n- Fetch downloads remote data\n- Pull syncs changes\n- Embedding field properly included\n",
+  "encoding": "utf8",
+  "size": 154,
+  "mime_type": "text/markdown",
+  "created_at": "2025-09-07T12:36:03.697Z"
+}

@@ -1,0 +1,14 @@
+{
+  "id": "test-root-commit-123",
+  "message": "Root commit test",
+  "parentId": null,
+  "treeId": "6e040efab31c42e7966b8d31a4e23df1b06fdfec",
+  "author": "ErgoSum CLI User",
+  "timestamp": "2025-09-07T10:23:48.352Z",
+  "metadata": {
+    "additions": 54,
+    "deletions": 0,
+    "files_changed": 1
+  },
+  "createdAt": "2025-09-07T11:32:46.567Z"
+}
